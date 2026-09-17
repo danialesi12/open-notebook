@@ -8,7 +8,7 @@ services:
     # List (exec) form so each interpolated value stays a single argument —
     # a password containing spaces would otherwise be split into several.
     command: ["start", "--log", "info", "--user", "${SURREAL_USER:-root}", "--pass", "${SURREAL_PASSWORD:-root}", "rocksdb:/mydata/mydatabase.db"]
-    user: root  # Required for bind mounts on Linux
+    user: root # Required for bind mounts on Linux
     ports:
       # Bound to localhost only: the open_notebook service reaches this over
       # the internal compose network regardless, so the host port is purely
@@ -24,10 +24,12 @@ services:
     pull_policy: always
 
   open_notebook:
-    image: lfnovo/open_notebook:v1-latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "8502:8502"  # Web UI
-      - "5055:5055"  # REST API
+      - "8502:8502" # Web UI
+      - "5055:5055" # REST API
     environment:
       # REQUIRED: Change this to your own secret string
       # This encrypts your API keys in the database
@@ -45,10 +47,10 @@ services:
       # OPTIONAL: heavy extraction runtimes, installed on first startup when
       # enabled (downloads are cached on the ./notebook_data volume, so only the
       # first boot is slow). See docs/5-CONFIGURATION/environment-reference.md.
-      # - OPEN_NOTEBOOK_ENABLE_DOCLING=true    # Docling engine + OCR + image sources (large ML stack)
-      # - OPEN_NOTEBOOK_ENABLE_CRAWL4AI=true   # local Crawl4AI (bundles a Chromium browser)
-      # - CRAWL4AI_API_URL=http://crawl4ai:11235  # use a remote Crawl4AI server instead (no local install)
-      # - CRAWL4AI_API_TOKEN=${CRAWL4AI_API_TOKEN}  # bearer token for that server (required by Crawl4AI >= 0.9.0)
+      # - OPEN_NOTEBOOK_ENABLE_DOCLING=true # Docling engine + OCR + image sources (large ML stack)
+      # - OPEN_NOTEBOOK_ENABLE_CRAWL4AI=true # local Crawl4AI (bundles a Chromium browser)
+      # - CRAWL4AI_API_URL=http://crawl4ai:11235 # use a remote Crawl4AI server instead (no local install)
+      # - CRAWL4AI_API_TOKEN=${CRAWL4AI_API_TOKEN} # bearer token for that server (required by Crawl4AI >= 0.9.0)
 
       # OPTIONAL: max concurrent background tasks the worker processes at once
       # (default 5). Set to 1 for sequential processing on single-GPU / local
@@ -59,4 +61,3 @@ services:
     depends_on:
       - surrealdb
     restart: always
-    pull_policy: always
